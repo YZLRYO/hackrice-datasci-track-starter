@@ -350,3 +350,34 @@ class DoubleInputGen(ArtistDatasetGenerator):
                 batch_indicies_b = self.dataset._construct_dual_batch(
                     batch_indicies_a)
                 yield batch_indicies_a, batch_indicies_b
+
+
+class TestDatasetGen(ArtistDatasetGenerator):
+    """
+    Creates batches for evaluating on the test datasets.
+
+    # Arguments
+        path_to_submission_info: The filepath to submission_info.csv
+    """
+
+    def __init__(self, dataset, path_to_submission_info, batch_size=None,
+                 shuffle=False, seed=None):
+        super(TestDatasetGen, self).__init__(
+            dataset, batch_size, shuffle, seed)
+        self.submission_info = pd.read_csv(index_col="index")
+        # Reset the steps to be one pass through of the submission_info
+        self.steps_per_epoch = (self.submission_info.shape[0]
+                                + self.batch_size - 1) / self.batch_size
+
+    def create_batch_argument_generator(self):
+        """
+        Generates batches according to the submission_info
+        """
+        while True:
+            # Generate the batch_indicies
+            for i in range(0, len(self.index_array), self.batch_size):
+                batch_fnames_a = self.submission_info['img1'].loc[i:i +
+                                                                  self.batch_size]
+                batch_fnames_b = self.submission_info['img2'].loc[i:i +
+                                                                  self.batch_size]
+                yield self.dataset.file_to_ind[batch_fnames_a], self.dataset.file_to_ind[batch_fnames_b]

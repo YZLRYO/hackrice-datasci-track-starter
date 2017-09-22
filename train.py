@@ -33,16 +33,16 @@ print("Validation Dataset: %s samples" % len(val_dataset))
 
 # Create the generators for the batches
 traingen = DoubleInputGen(train_dataset, batch_size=BATCH_SIZE,
-                          shuffle=SHUFFLE_GEN, seed=np.random.randing(10000))
+                          shuffle=SHUFFLE_GEN, seed=np.random.randint(10000))
 valgen = DoubleInputGen(val_dataset, batch_size=BATCH_SIZE,
-                        shuffle=SHUFFLE_GEN, seed=np.random.randing(10000))
+                        shuffle=SHUFFLE_GEN, seed=np.random.randint(10000))
 
 # Initialize the model
 model = MODEL_FUNC(TOWER_FUNC(), IMG_SIZE)
 
 # Set up any callbacks
 # This will save the best model by loss on the validation set as we train
-best_model = ModelCheckpoint(model.__name__ + ".h5", monitor='val_loss',
+best_model = ModelCheckpoint(MODEL_FUNC.__name__ + ".h5", monitor='val_loss',
                              verbose=1, save_best_only=True,
                              save_weights_only=True)
 callbacks = [best_model]
