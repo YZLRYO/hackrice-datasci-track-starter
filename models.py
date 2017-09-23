@@ -12,15 +12,15 @@ def siamese_model(tower, img_size):
     img_b = Input(img_size + (3,))
 
     # Pass the inputs through the towers
-    w = tower(img_a)
-    w = GlobalMaxPooling2D()(w)
+    u = tower(img_a)
+    u = GlobalMaxPooling2D()(u)
     v = tower(img_b)
     v = GlobalMaxPooling2D()(v)
 
     # Merge the outputs into one
     distance = dot([u, v], axes=1, normalize=True)
 
-    model = Model(inputs=[input_a, input_b], outputs=distance)
+    model = Model(inputs=[img_a, img_b], outputs=distance)
     model.compile(loss='binary_crossentropy',
                   optimizer='adam', metrics=['accuracy'])
     return model

@@ -38,19 +38,21 @@ class ArtistDataset(object):
 
         self.files = np.array(files)
         # This gives us a quick way to go from file names to indicies
-        self.file_to_ind = pd.Series(
+        self._file_to_ind = pd.Series(
             np.arange(len(self.files)), index=self.files)
         self.img_size = img_size
 
-        # Load in the train info if not provided and we have a path. Keep only
-        # the rows that we have images for.
+        # Load in the train info if not provided and we have a path.
         if train_info is None and path_to_train_info:
             train_info = pd.read_csv(
-                path_to_train_info, index_col="filename").loc[self.files]
+                path_to_train_info, index_col="filename")
 
         self.train_info = train_info
         # An attribute that tells if the dataset has labels or not
         self.labels = self.train_info is not None
+        # Keep only the rows that we have images for.
+        if self.labels:
+            self.train_info = self.train_info.loc[self.files]
         # If we have labels, we can group by artist, so we know which
         # paintings were painted by the same artist
         if self.labels:
@@ -58,7 +60,7 @@ class ArtistDataset(object):
             # This is used by _construct_dual_batch. We create it here once
             # and mutate to save memory and time.
             self._selection_mask = pd.Series(
-                np.ones(len(self.train_info.index), dtpe=bool), index=self.train_info.index)
+                np.ones(len(self.train_info.index), dtype=bool), index=self.train_info.index)
 
         # Construct a artist encoder if we have the train_info and no encoder
         if self.labels and artist_encoder is None:
@@ -78,6 +80,9 @@ class ArtistDataset(object):
         Returns the number of image files in the dataset.
         """
         return len(self.files)
+
+    def file_to_ind(self, filenames):
+        return self._file_to_ind[filenames].values
 
     def load_img(self, img_name):
         """
@@ -106,9 +111,9 @@ class ArtistDataset(object):
         # Figure out which half will have the same artist and which will have
         # different artists
         batch_fnames = self.files[batch_indicies]
-        artist_inds = np.permutation(len(batch_fnames))
-        same_artist_inds = artist_inds[:len(batch_fnames) / 2]
-        diff_artist_inds = artist_inds[len(batch_fnames) / 2:]
+        artist_inds = np.random.permutation(len(batch_fnames))
+        same_artist_inds = artist_inds[:int(len(batch_fnames) / 2)]
+        diff_artist_inds = artist_inds[int(len(batch_fnames) / 2):]
         # Get the artists of the entire batch
         batch_artists = self.train_info['artist'].loc[batch_fnames].values
 
@@ -133,7 +138,7 @@ class ArtistDataset(object):
             self._selection_mask[self.artist_groups.get_group(
                 artist).index.values] = True
 
-        return self.file_to_ind[batch_fnames_b]
+        return self.file_to_ind(batch_fnames_b)
 
     def create_single_input_batch(self, batch_indicies):
         """
@@ -366,8 +371,8 @@ class TestDatasetGen(ArtistDatasetGenerator):
             dataset, batch_size, shuffle, seed)
         self.submission_info = pd.read_csv(index_col="index")
         # Reset the steps to be one pass through of the submission_info
-        self.steps_per_epoch = (self.submission_info.shape[0]
-                                + self.batch_size - 1) / self.batch_size
+        self.steps_per_epoch = int((self.submission_info.shape[0]
+                                    + self.batch_size - 1) / self.batch_size)
 
     def create_batch_argument_generator(self):
         """
@@ -380,4 +385,4 @@ class TestDatasetGen(ArtistDatasetGenerator):
                                                                   self.batch_size]
                 batch_fnames_b = self.submission_info['img2'].loc[i:i +
                                                                   self.batch_size]
-                yield self.dataset.file_to_ind[batch_fnames_a], self.dataset.file_to_ind[batch_fnames_b]
+                yield self.dataset.file_to_ind(batch_fnames_a), self.dataset.file_to_ind(batch_fnames_b)
