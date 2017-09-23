@@ -8,8 +8,8 @@ from artist_dataset import ArtistDataset, DoubleInputGen
 SEED = 2525
 np.random.seed(SEED)
 # Directory information
-PATH_TO_TRAIN = "../train/"
-PATH_TO_TRAIN_INFO = "../train_info.csv"
+PATH_TO_TRAIN = "../data/train/"
+PATH_TO_TRAIN_INFO = "../data/train_info.csv"
 # Dataset settings
 IMG_SIZE = (128, 128)
 VAL_SPLIT = 0.2

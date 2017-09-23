@@ -8,8 +8,8 @@ from artist_dataset import ArtistDataset, TestDatasetGen
 SEED = 2525
 np.random.seed(SEED)
 # Directory information
-PATH_TO_TEST = "../test/"
-PATH_TO_SUBMISSION_INFO = "../submission_info.csv"
+PATH_TO_TEST = "../data/test/"
+PATH_TO_SUBMISSION_INFO = "../data/submission_info.csv"
 # Dataset settings
 IMG_SIZE = (128, 128)
 # Model settings
@@ -39,5 +39,6 @@ print(preds.shape)
 # Create the submission
 print("Creating Submission")
 submission = pd.DataFrame(np.hstack(
-    [np.arange(len(preds)).reshape(-1, 1), preds]), columns=['index', 'sameArtist'])
+    [np.arange(len(preds), dtype=int).reshape(-1, 1), preds]),
+    columns=['index', 'sameArtist'])
 submission.to_csv("../submission.csv", index=False)
