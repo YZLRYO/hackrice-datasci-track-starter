@@ -369,7 +369,8 @@ class TestDatasetGen(ArtistDatasetGenerator):
                  shuffle=False, seed=None):
         super(TestDatasetGen, self).__init__(
             dataset, batch_size, shuffle, seed)
-        self.submission_info = pd.read_csv(index_col="index")
+        self.submission_info = pd.read_csv(
+            path_to_submission_info, index_col="index")
         # Reset the steps to be one pass through of the submission_info
         self.steps_per_epoch = int((self.submission_info.shape[0]
                                     + self.batch_size - 1) / self.batch_size)

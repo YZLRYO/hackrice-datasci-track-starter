@@ -33,9 +33,11 @@ model = MODEL_FUNC(TOWER_FUNC(), IMG_SIZE)
 model.load_weights(MODEL_FUNC.__name__ + ".h5")
 
 # Make the predictions
-preds = model.predict_generator(testgen, testgen.steps_per_epoch, verbose=0)
+preds = model.predict_generator(testgen, testgen.steps_per_epoch, verbose=1)
+print(preds.shape)
 
 # Create the submission
-submission = pd.DataFrame(np.stack([np.arange(len(preds)), preds]), columns=[
-                          'index', 'sameArtist'])
+print("Creating Submission")
+submission = pd.DataFrame(np.hstack(
+    [np.arange(len(preds)).reshape(-1, 1), preds]), columns=['index', 'sameArtist'])
 submission.to_csv("../submission.csv", index=False)

@@ -1,5 +1,5 @@
 from keras.layers import Conv2D, Dense, BatchNormalization, Input, \
-    MaxPooling2D, GlobalMaxPooling2D, dot
+    MaxPooling2D, GlobalMaxPooling2D, concatenate
 from keras.models import Model
 
 
@@ -18,7 +18,8 @@ def siamese_model(tower, img_size):
     v = GlobalMaxPooling2D()(v)
 
     # Merge the outputs into one
-    distance = dot([u, v], axes=1, normalize=True)
+    uv = concatenate([u, v])
+    distance = Dense(1, activation='sigmoid')(uv)
 
     model = Model(inputs=[img_a, img_b], outputs=distance)
     model.compile(loss='binary_crossentropy',
